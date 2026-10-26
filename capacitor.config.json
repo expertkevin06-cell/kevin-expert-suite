@@ -1,0 +1,18 @@
+{
+  "appId": "com.kevin.expertsuite",
+  "appName": "Kevin Expert Suite",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "expertkevin06-cell.github.io",
+      "*.github.io"
+    ]
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config",
+      "iconColor": "#FFFFFF"
+    }
+  }
+}
