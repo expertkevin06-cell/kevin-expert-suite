@@ -31,8 +31,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build web app
-        run: npm run build
+      - name: Build web app for GitHub Pages
+        run: npm run build:pages
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
