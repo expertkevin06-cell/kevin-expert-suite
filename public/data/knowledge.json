@@ -1,0 +1,410 @@
+{
+  "meta": {
+    "nom": "Kevin Expert Suite",
+    "version": "0.3.0",
+    "description": "Base locale fusionnée : technique automobile, incendie, juridique, rédaction, expertise contextuelle."
+  },
+  "technique": {
+    "marques": [
+      { "nom": "Renault" },
+      { "nom": "Peugeot" },
+      { "nom": "Citroën" },
+      { "nom": "Tesla" },
+      { "nom": "BMW" },
+      { "nom": "Mercedes" },
+      { "nom": "Volkswagen" }
+    ],
+    "modeles": [
+      { "marque": "Renault", "modele": "Clio V" },
+      { "marque": "Renault", "modele": "Talisman" },
+      { "marque": "Peugeot", "modele": "3008 II" },
+      { "marque": "Citroën", "modele": "C5 Aircross" },
+      { "marque": "Tesla", "modele": "Model 3" },
+      { "marque": "Tesla", "modele": "Model Y" },
+      { "marque": "BMW", "modele": "Série 3 G20" },
+      { "marque": "Mercedes", "modele": "Classe C W206" },
+      { "marque": "Volkswagen", "modele": "Golf VIII" }
+    ],
+    "motorisations": [
+      { "marque": "Renault", "modele": "Clio V", "motorisation": "1.0 TCe 90 ch" },
+      { "marque": "Renault", "modele": "Talisman", "motorisation": "1.3 TCe 160 ch" },
+      { "marque": "Peugeot", "modele": "3008 II", "motorisation": "1.5 BlueHDi 130 ch" },
+      { "marque": "Tesla", "modele": "Model 3", "motorisation": "Electrique Long Range" },
+      { "marque": "Tesla", "modele": "Model Y", "motorisation": "Electrique Performance" },
+      { "marque": "BMW", "modele": "Série 3 G20", "motorisation": "320d" },
+      { "marque": "Mercedes", "modele": "Classe C W206", "motorisation": "C200" },
+      { "marque": "Volkswagen", "modele": "Golf VIII", "motorisation": "1.5 TSI 150 ch" }
+    ],
+    "dtc": [
+      {
+        "code": "P0300",
+        "designation": "Cylindrée(s) ratée(s) aléatoire(s) détectée(s)",
+        "gravite": "majeur",
+        "causes": [
+          "bobine d'allumage défaillante",
+          "injecteur encrassé ou défaillant",
+          "perte de compression",
+          "faisceau électrique abîmé",
+          "calamine / soupape mal fermée"
+        ],
+        "source": "https://expertkevin06-cell.github.io/auto-diagnostic/"
+      },
+      {
+        "code": "P0420",
+        "designation": "Efficacité du système catalytique sous le seuil (banque 1)",
+        "gravite": "moyen",
+        "causes": [
+          "catalyseur fatigué",
+          "sonde lambda défaillante",
+          "fuite à l'échappement",
+          "problème de combustion"
+        ],
+        "source": "https://expertkevin06-cell.github.io/auto-diagnostic/"
+      },
+      {
+        "code": "U0100",
+        "designation": "Perte de communication avec ECM/PCM",
+        "gravite": "majeur",
+        "causes": [
+          "calculateur HS",
+          "problème CAN bus",
+          "massique coupée",
+          "alimentation calculateur"
+        ],
+        "source": "https://expertkevin06-cell.github.io/mon-aide-technique/"
+      }
+    ],
+    "pannes": [
+      {
+        "marque": "MULTIMARQUE",
+        "modele": "",
+        "symptome": "Voyant moteur allumé",
+        "cause": "Code défaut mémorisé dans le calculateur",
+        "fix": "Lire les DTC, vérifier cohérence capteurs, alimentation, masse, CAN.",
+        "source": "https://expertkevin06-cell.github.io/auto-diagnostic/"
+      },
+      {
+        "marque": "Tesla",
+        "modele": "Model 3 / Model Y",
+        "symptome": "Alerte batterie HT / limitation de puissance",
+        "cause": "Déséquilibre cellules, BMS, gestion thermique",
+        "fix": "Analyser logs BMS, tension cellules, température, historique charges.",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "rappels": [
+      {
+        "marque": "Tesla",
+        "modele": "Model 3 / Model Y",
+        "titre": "Surveillance logiciel BMS",
+        "description": "Mise à jour du gestionnaire de batterie pour limiter certains risques thermiques.",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      },
+      {
+        "marque": "MULTIMARQUE",
+        "modele": "",
+        "titre": "Campagne rappel européen",
+        "description": "À compléter depuis les sources officielles constructeur / Safety Gate.",
+        "source": "https://expertkevin06-cell.github.io/auto-diagnostic/"
+      }
+    ],
+    "fichesExpert": [
+      {
+        "titre": "Fiche expertise litige automobile",
+        "conditions": "Véhicule 2017-2026, panne ou sinistre, contestation constructeur ou assurance.",
+        "effets": "Recherche de responsabilité, vice caché, non-conformité, défaut de conception ou maintenance.",
+        "baseLegale": "Code civil, droit de la consommation, jurisprudence applicable.",
+        "source": "https://expertkevin06-cell.github.io/rapport-expertise-contextuel/"
+      }
+    ]
+  },
+  "incendie": {
+    "patterns": [
+      {
+        "nom": "V-shaped burn",
+        "zone": "Habitacle / panneau de porte",
+        "mecanisme": "Propagation ascendante depuis un point bas",
+        "preuves": [
+          "noir de fumée en V",
+          "fusion plastique directionnelle",
+          "carbonisation différentielle"
+        ],
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "chimieFeu": [
+      {
+        "gaz": "CO",
+        "source": "Combustion incomplète",
+        "danger": "Toxicité aiguë, asphyxie",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      },
+      {
+        "gaz": "HCN",
+        "source": "Combustion de polyuréthane / textiles",
+        "danger": "Très toxique",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "polymere": [
+      {
+        "nom": "PP",
+        "usages": ["Pare-chocs", "éléments habitacle", "réservoirs"],
+        "feu": "Fusion, gouttelettes, propagation rapide",
+        "role": "Charge calorifique",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      },
+      {
+        "nom": "ABS",
+        "usages": ["Tableau de bord", "coques", "connecteurs"],
+        "feu": "Dégagement de fumée noire, HCN possible",
+        "role": "Matériau technique combustible",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "metaux": [
+      {
+        "materiau": "Aluminium",
+        "fusionC": 660,
+        "fusionF": 1220,
+        "aspect": "Perles fondues, écoulement visqueux",
+        "interpretation": "Exposition supérieure à ~600°C",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      },
+      {
+        "materiau": "Cuivre",
+        "fusionC": 1085,
+        "fusionF": 1985,
+        "aspect": "Perles de fusion, traces d'arc",
+        "interpretation": "À analyser avec ASTM E2929",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "batterieHT": [
+      {
+        "theme": "Thermal runaway",
+        "detail": "Emballement thermique d'une cellule Li-ion",
+        "risk": "Propagation rapide, fumée toxique, réignition",
+        "prevention": "BMS, séparation cellules, détection température, stockage sécurisé",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "sourcesDepart": [
+      {
+        "type": "Court-circuit électrique",
+        "indices": [
+          "perles de fusion cuivre",
+          "traces d'arc",
+          "fusion localisée du faisceau"
+        ],
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      },
+      {
+        "type": "Source externe",
+        "indices": [
+          "point d'origine au sol",
+          "V-shaped burn inversé",
+          "accélération absente"
+        ],
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "fils": [
+      {
+        "norme": "ASTM E2929",
+        "objet": "Microscopie des conducteurs cuivre/aluminium",
+        "interpretation": "Distinguer fusion pré-mortem / post-mortem, arc, surcharge",
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "zones": [
+      {
+        "zone": "Habitable",
+        "risque": "Toxicité, obstruction évacuation",
+        "elements": ["tapis", "sièges", "panneaux", "faisceaux", "plastique ABS/PP"]
+      },
+      {
+        "zone": "Compartiment moteur",
+        "risque": "Fuites fluides, chaleur, électricité",
+        "elements": ["injecteurs", "bobines", "alternateur", "courroies", "liquides"]
+      },
+      {
+        "zone": "Batterie HT",
+        "risque": "Thermal runaway, arc DC, fumée toxique",
+        "elements": ["cellules", "BMS", "connecteurs HV", "isolement", "refroidissement"]
+      }
+    ]
+  },
+  "juridique": {
+    "fiches": [
+      {
+        "titre": "Vice caché",
+        "conditions": "Défaut antérieur à la vente, non visible lors de l'achat, rendant le bien impropre à son usage ou diminuant fortement son usage.",
+        "effets": "Action rédhibitoire ou action estimatoire.",
+        "baseLegale": "Articles 1641 et suivants du Code civil français.",
+        "source": "https://www.legifrance.gouv.fr/"
+      },
+      {
+        "titre": "Défaut de conformité",
+        "conditions": "Bien non conforme au contrat, au descriptif, à l'usage attendu.",
+        "effets": "Réparation, remplacement, réduction de prix, résolution.",
+        "baseLegale": "Code de la consommation.",
+        "source": "https://www.legifrance.gouv.fr/"
+      }
+    ],
+    "jurisprudences": [
+      {
+        "titre": "Responsabilité du constructeur / vendeur",
+        "resume": "À compléter avec décisions exactes, dates, cours, pourvois, liens Legifrance.",
+        "portee": "Analyse de preuve, défaut, information, entretien."
+      }
+    ],
+    "textes": [
+      {
+        "titre": "Code civil",
+        "domaine": "Obligations, vente, responsabilité",
+        "source": "https://www.legifrance.gouv.fr/"
+      },
+      {
+        "titre": "Code de la consommation",
+        "domaine": "Conformité, pratiques commerciales, garantie légale",
+        "source": "https://www.legifrance.gouv.fr/"
+      }
+    ],
+    "questions": [
+      {
+        "question": "Le défaut était-il connu ou connaissable avant la vente ?",
+        "reponse": "Element déterminant pour vice caché / conformité / responsabilité."
+      },
+      {
+        "question": "L'entretien a-t-il été régulièrement assuré ?",
+        "reponse": "Peut exclure ou limiter la responsabilité si mauvaise utilisation négligence."
+      }
+    ],
+    "formulations": [
+      {
+        "titre": "Formulation prudente d'hypothèse technique",
+        "texte": "Les éléments constatés permettent de retenir l'hypothèse suivante, sous réserve des vérifications complémentaires..."
+      }
+    ]
+  },
+  "redaction": {
+    "modeles": [
+      {
+        "titre": "Constat technique automobile",
+        "sections": [
+          "Contexte du véhicule",
+          "Observations matérielles",
+          "Codes défaut lus",
+          "Hypothèses causales",
+          "Conclusion technique",
+          "Implication juridique éventuelle"
+        ],
+        "source": "https://expertkevin06-cell.github.io/aide-redactionnelle-technique/"
+      },
+      {
+        "titre": "Note d'expertise incendie",
+        "sections": [
+          "Point d'origine",
+          "Pattern de combustion",
+          "Matériaux impliqués",
+          "Analyse électrique",
+          "Batterie HT si véhicule électrique",
+          "Conclusion NFPA 921 / ASTM E2929"
+        ],
+        "source": "https://expertkevin06-cell.github.io/firediag-auto/"
+      }
+    ],
+    "sections": [
+      { "titre": "Faits", "description": "Exposition neutre et chronologique." },
+      { "titre": "Constations", "description": "Observations objectives, photos, mesures, DTC." },
+      { "titre": "Analyse", "description": "Hypothèses, causalité, normes, textes." },
+      { "titre": "Conclusion", "description": "Synthèse prudente et recommandations." }
+    ],
+    "formules": [
+      {
+        "titre": "Réserves expertise",
+        "texte": "La présente analyse est réalisée sur la base des éléments communiqués et ne préjuge pas des investigations complémentaires."
+      }
+    ],
+    "checklists": [
+      {
+        "titre": "Checklist litige automobile",
+        "items": [
+          "carte grise",
+          "historique entretien",
+          "rapport DTC",
+          "photos dommages",
+          "déclaration sinistre",
+          "rapels constructeur",
+          "avis technique",
+          "éventuel rapport incendie"
+        ]
+      }
+    ]
+  },
+  "expertise": {
+    "grilles": [
+      {
+        "titre": "Grille croisée technique / juridique",
+        "items": [
+          "fait générateur",
+          "dommage",
+          "lien de causalité",
+          "défaut potentiel",
+          "entretien",
+          "usage",
+          "responsabilité"
+        ]
+      }
+    ],
+    "scenarios": [
+      {
+        "titre": "Panne moteur + suspicion électrique",
+        "description": "Croiser DTC, faisceau, calculateur, alimentation, masse, CAN, historique entretien."
+      },
+      {
+        "titre": "Principie d'incendie véhicule électrique",
+        "description": "Croiser BMS, cellules, connecteurs HV, isolement, choc thermique, recharge, rappel."
+      }
+    ],
+    "questions": [
+      {
+        "question": "Le défaut est-il antérieur au sinistre ?",
+        "importance": "haute"
+      },
+      {
+        "question": "Une maintenance non conforme a-t-elle contribué au dommage ?",
+        "importance": "haute"
+      }
+    ],
+    "conclusions": [
+      {
+        "titre": "Conclusion provisoire type",
+        "texte": "À ce stade, les éléments disponibles orientent vers..., sans exclure..., sous réserve de..."
+      }
+    ]
+  },
+  "sources": [
+    {
+      "nom": "Legifrance",
+      "url": "https://www.legifrance.gouv.fr/",
+      "categorie": "Droit"
+    },
+    {
+      "nom": "Union européenne - Safety Gate",
+      "url": "https://ec.europa.eu/safety-gate/",
+      "categorie": "Rappels produits"
+    },
+    {
+      "nom": "NFPA 921",
+      "url": "https://www.nfpa.org/",
+      "categorie": "Incendie"
+    },
+    {
+      "nom": "ASTM International",
+      "url": "https://www.astm.org/",
+      "categorie": "Incendie / fils électriques"
+    }
+  ]
+}
