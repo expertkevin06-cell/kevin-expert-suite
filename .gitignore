@@ -1,6 +1,5 @@
 node_modules
 dist
 android
-tmp-modules
 .DS_Store
 Thumbs.db
