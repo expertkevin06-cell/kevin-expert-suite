@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-android:
@@ -70,3 +70,15 @@ jobs:
         with:
           name: kevin-expert-suite-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+
+      - name: Create GitHub Release with APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="apk-debug-run-${GITHUB_RUN_ID}"
+          gh release create "$TAG" \
+            android/app/build/outputs/apk/debug/app-debug.apk \
+            --title "Kevin Expert Suite APK - run ${GITHUB_RUN_NUMBER}" \
+            --notes "APK debug générée automatiquement. Installez le fichier app-debug.apk sur Android." \
+            --latest
