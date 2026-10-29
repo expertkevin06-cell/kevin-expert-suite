@@ -5,21 +5,20 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 import { Browser } from "@capacitor/browser";
 import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import { FileSystem, Directory } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
 import "./styles.css";
 
-// --- CONFIGURATION ---
+// --- CONFIGURATION STRICTE ---
 const ADMIN_PASSWORD = "Kevin83600";
 const BASE_URL = import.meta.env.BASE_URL || "./";
 const KNOWLEDGE_PATH = `${BASE_URL}data/knowledge.json`;
 const AI_ENDPOINT = "https://text.pollinations.ai/";
-const AI_MODELS = ["openai", "mistral", "llama"]; // Modèles gratuits sans clé
+const AI_MODELS = ["openai", "mistral", "llama"]; 
 
-// --- STATE GLOBAL ---
+// --- STATE GLOBAL AVEC TYPES PRIMITIFS ---
 const state = {
   ready: false,
-  session: null, // { role: 'admin'|'tier', name: string, userId?: string }
-  users: [],     // Liste des tiers
+  session: null, 
+  users: [],     
   online: true,
   loginMode: "admin",
   adminPwd: "",
@@ -27,30 +26,25 @@ const state = {
   error: "",
   notice: "",
   
-  // Données
-  kb: {},        // Knowledge Base chargée
-  rawKbJson: "", // Cache texte brut
-  
-  // UI
+  kb: {},        
   activeTab: "dashboard",
   searchQuery: "",
   searchResults: [],
   
-  // IA & Analyse
   analysisInput: "",
   analysisOutput: "",
   isAnalyzing: false,
   
-  // Admin Settings
-  backgroundImageUrl: null, // Data URI ou chemin local
+  backgroundImageUrl: null, 
 };
 
 const app = document.getElementById("app");
 
-// --- UTILITAIRES ---
+// --- UTILITAIRES DE SÉCURITÉ ---
 
 function esc(str) {
-  return String(str ?? "").replace(/[&<>"']/g, (m) => ({
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>"']/g, (m) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   })[m]);
 }
@@ -68,13 +62,22 @@ async function sha256(text) {
 }
 
 async function getPref(key, fallback) {
-  const { value } = await Preferences.get({ key });
-  if (!value) return fallback;
-  try { return JSON.parse(value); } catch { return fallback; }
+  try {
+    const { value } = await Preferences.get({ key });
+    if (!value) return fallback;
+    return JSON.parse(value);
+  } catch (e) {
+    console.error(`Erreur lecture pref ${key}:`, e);
+    return fallback;
+  }
 }
 
 async function setPref(key, value) {
-  await Preferences.set({ key, value: JSON.stringify(value) });
+  try {
+    await Preferences.set({ key, value: JSON.stringify(value) });
+  } catch (e) {
+    console.error(`Erreur écriture pref ${key}:`, e);
+  }
 }
 
 async function notify(title, body) {
@@ -83,21 +86,29 @@ async function notify(title, body) {
     await LocalNotifications.schedule({
       notifications: [{ id: Math.floor(Math.random()*100000), title, body }]
     });
-  } catch (e) { console.warn(e); }
+  } catch (e) { 
+    console.warn("Notification failed:", e); 
+  }
 }
 
-// --- AUTHENTIFICATION ---
+// --- AUTHENTIFICATION ROBUSTE ---
 
 async function ensureAdminInit() {
-  const hash = await Preferences.get({ key: "admin_hash" });
-  if (!hash.value) {
-    const h = await sha256(ADMIN_PASSWORD);
-    await Preferences.set({ key: "admin_hash", value: h });
+  try {
+    const hash = await Preferences.get({ key: "admin_hash" });
+    if (!hash.value) {
+      const h = await sha256(ADMIN_PASSWORD);
+      await Preferences.set({ key: "admin_hash", value: h });
+    }
+  } catch (e) {
+    console.error("Init Admin Fail:", e);
   }
 }
 
 async function loginAdmin(pwd) {
   const stored = (await Preferences.get({ key: "admin_hash" })).value;
+  if (!stored) throw new Error("Initialisation admin manquante.");
+  
   const inputHash = await sha256(pwd);
   if (inputHash !== stored) throw new Error("Mot de passe incorrect.");
   
@@ -145,73 +156,73 @@ async function setUserStatus(id, status) {
   }
 }
 
-// --- DONNEES & RECHERCHE ---
+// --- CHARGEMENT BASE DE DONNÉES AVEC VALIDATION ---
 
 async function loadKnowledge() {
   try {
     const res = await fetch(KNOWLEDGE_PATH, { cache: "no-store" });
-    if (!res.ok) throw new Error("Base locale introuvable");
-    state.rawKbJson = await res.text();
-    state.kb = JSON.parse(state.rawKbJson);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const json = await res.json();
+    
+    // Validation structure minimale
+    if (!json.technique || !json.incendie || !json.juridique) {
+      console.warn("Structure KB incomplète, utilisation defaults.");
+      state.kb = { technique: { dtc_codes: [], pannes_types: [] }, incendie: { patterns: [], causes_racines: [] }, juridique: { principes: [] } };
+    } else {
+      state.kb = json;
+    }
   } catch (e) {
     console.error("Erreur chargement KB:", e);
-    state.kb = { technique: {}, incendie: {}, juridique: {} }; // Fallback vide
+    state.notice = "⚠️ Base locale inaccessible. Fonctionnement dégradé.";
+    state.kb = { technique: {}, incendie: {}, juridique: {} };
   }
 }
 
 function performSearch(query) {
-  if (!query.trim()) return [];
+  if (!query || query.trim().length < 2) return [];
   const q = query.toLowerCase();
   const results = [];
 
-  // Recherche dans DTC
-  if (state.kb.technique?.dtc_codes) {
-    state.kb.technique.dtc_codes.forEach(item => {
-      if (item.code.toLowerCase().includes(q) || item.definition.toLowerCase().includes(q)) {
-        results.push({ type: "technique", title: `DTC ${item.code}`, content: item });
-      }
-    });
-  }
+  const safeArr = (arr) => Array.isArray(arr) ? arr : [];
 
-  // Recherche dans Pannes
-  if (state.kb.technique?.pannes_types) {
-    state.kb.technique.pannes_types.forEach(item => {
-      if (item.titre.toLowerCase().includes(q) || item.symptomes.some(s => s.toLowerCase().includes(q))) {
-        results.push({ type: "technique", title: item.titre, content: item });
-      }
-    });
-  }
+  // Recherche DTC
+  safeArr(state.kb.technique?.dtc_codes).forEach(item => {
+    if (item.code?.toLowerCase().includes(q) || item.definition?.toLowerCase().includes(q)) {
+      results.push({ type: "technique", title: `DTC ${item.code}`, content: item });
+    }
+  });
 
-  // Recherche dans Incendie (Causes)
-  if (state.kb.incendie?.causes_racines) {
-    state.kb.incendie.causes_racines.forEach(item => {
-      if (item.categorie.toLowerCase().includes(q) || item.sous_categorie.toLowerCase().includes(q)) {
-        results.push({ type: "incendie", title: `${item.categorie} - ${item.sous_categorie}`, content: item });
-      }
-    });
-  }
+  // Recherche Pannes
+  safeArr(state.kb.technique?.pannes_types).forEach(item => {
+    if (item.titre?.toLowerCase().includes(q)) {
+      results.push({ type: "technique", title: item.titre, content: item });
+    }
+  });
 
-  // Recherche dans Juridique
-  if (state.kb.juridique?.principes) {
-    state.kb.juridique.principes.forEach(item => {
-      if (item.titre.toLowerCase().includes(q)) {
-        results.push({ type: "juridique", title: item.titre, content: item });
-      }
-    });
-  }
+  // Recherche Incendie
+  safeArr(state.kb.incendie?.causes_racines).forEach(item => {
+    if (item.categorie?.toLowerCase().includes(q) || item.sous_categorie?.toLowerCase().includes(q)) {
+      results.push({ type: "incendie", title: `${item.categorie} - ${item.sous_categorie}`, content: item });
+    }
+  });
 
-  return results.slice(0, 20); // Limite affichage
+  // Recherche Juridique
+  safeArr(state.kb.juridique?.principes).forEach(item => {
+    if (item.titre?.toLowerCase().includes(q)) {
+      results.push({ type: "juridique", title: item.titre, content: item });
+    }
+  });
+
+  return results.slice(0, 20);
 }
 
-// --- ANALYSE IA CONTEXTUELLE ---
+// --- ANALYSE IA AVEC GESTION ERREURS ---
 
 function buildContextPrompt(userQuery) {
-  const keywords = userQuery.toLowerCase().split(/\s+/);
+  const relevantItems = performSearch(userQuery);
   let contextBlock = "";
 
-  // Récupérer fragments pertinents de la KB pour nourrir l'IA
-  const relevantItems = performSearch(userQuery);
-  
   if (relevantItems.length > 0) {
     contextBlock += "\n=== BASE DE CONNAISSANCES LOCALE PERTINENTE ===\n";
     relevantItems.forEach(item => {
@@ -246,12 +257,12 @@ async function runAnalysis() {
   
   state.isAnalyzing = true;
   state.analysisOutput = "";
+  state.notice = "";
   render();
 
   try {
     const prompt = buildContextPrompt(state.analysisInput);
     
-    // Appel parallèle aux modèles pour robustesse
     const promises = AI_MODELS.map(model => 
       fetch(AI_ENDPOINT, {
         method: "POST",
@@ -276,7 +287,7 @@ async function runAnalysis() {
       state.analysisOutput = "❌ Erreur : Aucun service IA disponible. Vérifiez votre connexion Internet.";
     }
   } catch (e) {
-    state.analysisOutput = "❌ Exception : " + e.message;
+    state.analysisOutput = "❌ Exception Critique : " + e.message;
   } finally {
     state.isAnalyzing = false;
     render();
@@ -291,20 +302,17 @@ async function pickBackgroundImage() {
       quality: 90,
       allowEditing: false,
       resultType: CameraResultType.Uri,
-      source: CameraSource.Photos // Ou Gallery/Prompt
+      source: CameraSource.Photos
     });
 
     if (image.webPath) {
-      // Télécharger l'image pour la stocker localement durablement
       const response = await fetch(image.webPath);
       const blob = await response.blob();
       
-      // Convertir Blob en Base64 pour stockage simple ou écrire fichier
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Data = reader.result.split(',')[1];
         
-        // Sauvegarder dans FileSystem
         await FileSystem.writeFile({
           path: 'background.jpg',
           directory: Directory.Data,
@@ -312,16 +320,15 @@ async function pickBackgroundImage() {
           recursive: true
         });
 
-        // Appliquer le fond
         applyBackgroundFromStorage();
-        state.notice = "Image de fond mise à jour avec succès.";
+        state.notice = "✅ Image de fond mise à jour.";
         render();
       };
       reader.readAsDataURL(blob);
     }
   } catch (e) {
     console.error(e);
-    state.notice = "Impossible de charger l'image : " + e.message;
+    state.notice = "❌ Impossible de charger l'image : " + e.message;
     render();
   }
 }
@@ -333,14 +340,10 @@ async function applyBackgroundFromStorage() {
       directory: Directory.Data
     });
     
-    // Reconstruire Data URI
-    const mimeType = 'image/jpeg';
-    const dataUri = `data:${mimeType};base64,${file.data}`;
-    
+    const dataUri = `data:image/jpeg;base64,${file.data}`;
     document.body.style.backgroundImage = `url(${dataUri})`;
     state.backgroundImageUrl = dataUri;
   } catch (e) {
-    // Pas de fichier, revenir au fond par défaut CSS
     document.body.style.backgroundImage = '';
     state.backgroundImageUrl = null;
   }
@@ -354,7 +357,7 @@ async function removeBackground() {
     });
     document.body.style.backgroundImage = '';
     state.backgroundImageUrl = null;
-    state.notice = "Fond d'écran supprimé.";
+    state.notice = "🗑️ Fond d'écran supprimé.";
     render();
   } catch (e) {
     state.notice = "Erreur suppression : " + e.message;
@@ -365,13 +368,17 @@ async function removeBackground() {
 // --- NETWORK HANDLING ---
 
 async function initNetwork() {
-  const status = await Network.getStatus();
-  state.online = status.connected;
-  
-  Network.addListener('networkStatusChange', (newStatus) => {
-    state.online = newStatus.connected;
-    render(); // Re-render pour mettre à jour badge
-  });
+  try {
+    const status = await Network.getStatus();
+    state.online = status.connected;
+    
+    Network.addListener('networkStatusChange', (newStatus) => {
+      state.online = newStatus.connected;
+      render();
+    });
+  } catch (e) {
+    console.warn("Network plugin unavailable:", e);
+  }
 }
 
 // --- RENDERING ENGINE ---
@@ -380,15 +387,15 @@ function renderLogin() {
   return `
     <div class="modal">
       <div class="modal-content card">
-        <h2 class="mb-2">🔐 Kevin Expert Suite Pro</h2>
-        <p class="text-muted mb-2">Connexion Sécurisée</p>
+        <h2 class="mb-2">🔐 Kevin Expert Suite Pro V4</h2>
+        <p class="text-muted mb-2">Connexion Sécurisée & Strict Mode</p>
         
         <div class="nav-tabs mb-2">
           <button class="nav-tab ${state.loginMode==='admin'?'active':''}" onclick="setLoginMode('admin')">Admin</button>
           <button class="nav-tab ${state.loginMode==='tier'?'active':''}" onclick="setLoginMode('tier')">Tiers</button>
         </div>
 
-        ${state.error ? `<div class="result-item incendie mb-2">${esc(state.error)}</div>` : ''}
+        ${state.error ? `<div class="result-item critique mb-2">${esc(state.error)}</div>` : ''}
 
         ${state.loginMode === 'admin' ? `
           <label>Mot de Passe Admin</label>
@@ -410,7 +417,7 @@ function renderDashboard() {
   return `
     <div class="header-bar">
       <div>
-        <strong>KEVIN EXPERT SUITE PRO</strong>
+        <strong>KEVIN EXPERT SUITE PRO V4</strong>
         <div class="text-muted small">${isAdmin ? 'MODE ADMINISTRATEUR' : 'MODE TIERS'} • ${state.online ? 'ONLINE' : 'OFFLINE'}</div>
       </div>
       <div class="flex align-center col-gap">
@@ -424,7 +431,6 @@ function renderDashboard() {
     <div class="nav-tabs p-2 bg-secondary" style="margin-bottom:10px;">
       <button class="nav-tab ${state.activeTab==='analysis'?'active':''}" onclick="switchTab('analysis')">🧠 Analyse Expert</button>
       <button class="nav-tab ${state.activeTab==='search'?'active':''}" onclick="switchTab('search')">🔍 Recherche KB</button>
-      <button class="nav-tab ${state.activeTab==='legacy'?'active':''}" onclick="switchTab('legacy')">📂 Anciens Projets</button>
       ${isAdmin ? `<button class="nav-tab ${state.activeTab==='admin'?'active':''}" onclick="switchTab('admin')">⚙️ Admin</button>` : ''}
     </div>
 
@@ -438,7 +444,6 @@ function renderTabContent() {
   switch(state.activeTab) {
     case 'analysis': return renderAnalysisView();
     case 'search': return renderSearchView();
-    case 'legacy': return renderLegacyView();
     case 'admin': return renderAdminView();
     default: return renderAnalysisView();
   }
@@ -450,7 +455,7 @@ function renderAnalysisView() {
       <h3>🛡️ Assistant Ingénieur-Sapeur-Juriste</h3>
       <p class="text-muted mb-2">Décrivez la panne, l'incident ou le litige. L'IA croisera la base locale massive.</p>
       
-      <textarea id="analysisInput" rows="6" placeholder="Ex: Voiture Tesla Model 3, voyant batterie rouge, odeur brûlée sous siège arrière, client veut remboursement...">${esc(state.analysisInput)}</textarea>
+      <textarea id="analysisInput" rows="6" placeholder="Ex: Tesla Model 3, voyant batterie rouge, odeur brûlée sous siège arrière...">${esc(state.analysisInput)}</textarea>
       
       <div class="mt-2 flex col-gap">
         <button class="primary" onclick="updateAnalysisInput()" ${state.isAnalyzing ? 'disabled' : ''}>
@@ -463,7 +468,7 @@ function renderAnalysisView() {
 
       ${state.analysisOutput ? `
         <div class="mt-2 result-item">
-          <pre style="white-space: pre-wrap; font-family: inherit;">${esc(state.analysisOutput)}</pre>
+          <pre>${esc(state.analysisOutput)}</pre>
         </div>
       ` : ''}
     </div>
@@ -484,27 +489,6 @@ function renderSearchView() {
             <strong>[${r.type.toUpperCase()}] ${esc(r.title)}</strong>
             <div class="small text-muted mt-1">${esc(JSON.stringify(r.content).substring(0, 150))}...</div>
           </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-}
-
-function renderLegacyView() {
-  const links = [
-    { name: "Auto Diagnostic Pro", url: "https://expertkevin06-cell.github.io/auto-diagnostic/" },
-    { name: "Tech Incendie", url: "https://expertkevin06-cell.github.io/firediag-auto/" },
-    { name: "Droit & Jurisprudence", url: "https://expertkevin06-cell.github.io/droit-jurisprudence-ai/" },
-    { name: "Rapport Expertise", url: "https://expertkevin06-cell.github.io/rapport-expertise-contextuel/" }
-  ];
-
-  return `
-    <div class="card">
-      <h3>📂 Accès Rapides Anciens Modules</h3>
-      <p class="text-muted mb-2">Ouverture dans navigateur externe pour performance maximale.</p>
-      <div class="col-2">
-        ${links.map(l => `
-          <button class="w-full" onclick="openBrowser('${l.url}')">${l.name}</button>
         `).join('')}
       </div>
     </div>
@@ -567,7 +551,7 @@ function renderAdminView() {
 
 function render() {
   if (!state.ready) {
-    app.innerHTML = `<div class="center"><h2>Chargement...</h2></div>`;
+    app.innerHTML = `<div class="center"><h2>Chargement Strict Mode...</h2></div>`;
     return;
   }
 
@@ -578,13 +562,12 @@ function render() {
 
   app.innerHTML = renderDashboard();
   
-  // Réappliquer le fond si défini (car innerHTML efface styles inline body parfois selon nav)
   if (state.backgroundImageUrl) {
     document.body.style.backgroundImage = `url(${state.backgroundImageUrl})`;
   }
 }
 
-// --- EVENT LISTENERS & ACTIONS GLOBALES ---
+// --- EVENT LISTENERS GLOBAUX ---
 
 window.setLoginMode = (mode) => { state.loginMode = mode; state.error = ""; render(); };
 window.handleLogin = async () => {
@@ -615,9 +598,6 @@ window.executeSearch = () => {
   state.searchResults = performSearch(state.searchQuery);
   render();
 };
-window.openBrowser = async (url) => {
-  try { await Browser.open({ url }); } catch { window.open(url, '_blank'); }
-};
 window.copyAnalysis = () => {
   navigator.clipboard.writeText(state.analysisOutput);
   alert("Rapport copié !");
@@ -635,14 +615,10 @@ async function init() {
   await loadKnowledge();
   await initNetwork();
   
-  // Charger session
   const savedSession = await getPref("session", null);
   if (savedSession) state.session = savedSession;
   
-  // Charger utilisateurs
   state.users = await getPref("tier_users", []);
-  
-  // Charger fond d'écran si existe
   await applyBackgroundFromStorage();
 
   state.ready = true;
