@@ -1,15 +1,10 @@
 {
   "name": "kevin-expert-suite",
   "private": true,
-  "version": "4.0.0-STRICT",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build --base=./",
-    "build:pages": "vite build --base=/kevin-expert-suite/",
-    "preview": "vite preview",
-    "lint": "node scripts/check-syntax.mjs"
-  },
+  "version": "4.0.1-FIXED",
+  "type": "module", 
+  ...
+},
   "dependencies": {
     "@capacitor/android": "^6.2.0",
     "@capacitor/browser": "^6.0.2",
