@@ -1,6 +1,6 @@
 {
-  "appId": "com.kevin.expertsuite",
-  "appName": "Kevin Expert Suite",
+  "appId": "com.kevin.expertsuite.v4",
+  "appName": "Kevin Expert Suite Pro",
   "webDir": "dist",
   "server": {
     "androidScheme": "https",
@@ -13,6 +13,9 @@
     "LocalNotifications": {
       "smallIcon": "ic_stat_icon_config",
       "iconColor": "#FFFFFF"
+    },
+    "Camera": {
+      "saveToPhotos": true
     }
   }
 }
