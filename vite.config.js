@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/kevin-expert-suite/",
+  base: "./",
   build: {
     outDir: "dist",
     sourcemap: false
