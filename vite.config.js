@@ -5,7 +5,10 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: false,
-    // Désactivation du minifier agressif pour éviter les bugs de scope en prod
-    minify: 'esbuild' 
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 });
