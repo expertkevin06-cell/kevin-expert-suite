@@ -1,14 +1,12 @@
 {
   "name": "kevin-expert-suite",
   "private": true,
-  "version": "4.0.3-FIXED",
+  "version": "4.0.2-FINAL",
   "type": "module",
-  "engines": {
-    "node": ">=22.0.0"
-  },
   "scripts": {
     "dev": "vite",
     "build": "vite build --base=./",
+    "build:pages": "vite build --base=/kevin-expert-suite/",
     "preview": "vite preview"
   },
   "dependencies": {
