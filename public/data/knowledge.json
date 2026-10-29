@@ -2,51 +2,64 @@
   "meta": {
     "version": "4.0.0",
     "lastUpdate": "2026-10-29",
-    "author": "Kevin Expert Suite"
+    "author": "Kevin Expert Suite",
+    "description": "Base de connaissances ingénieur/sapeur/juriste fusionnée."
   },
   "technique": {
     "dtc_codes": [
       {
         "code": "P0300",
-        "system": "Moteur",
-        "definition": "Détection de ratés d'allumage aléatoires/multiples",
-        "causes_probables": ["Bobines défectueuses", "Injecteurs bouchés", "Compression faible", "Faisceau abîmé"],
-        "risques_incendie": "Faible (sauf fuite carburant associée)",
-        "implication_juridique": "Manquement entretien possible si ignoré longtemps"
+        "system": "Moteur Essence",
+        "definition": "Ratés d'allumage aléatoires/multiples détectés",
+        "causes_mecaniques": ["Bobines HS", "Injecteurs bouchés", "Compression faible", "Calamine"],
+        "causes_electriques": ["Faisceau abîmé", "ECU défaillant", "Capteur vilebrequin"],
+        "risque_incendie": "FAIBLE sauf si mélange riche + fuite carburant sur collecteur chaud",
+        "implication_juridique": "Manquement entretien utilisateur probable si ignoré longtemps"
       },
       {
         "code": "B1000",
-        "system": "Carrosserie/Elec",
+        "system": "Carrosserie / BCM",
         "definition": "Erreur générique module contrôle corps",
-        "causes_probables": ["Court-circuit faisceau porte", "Relais collé", "Corrosion connecteur"],
-        "risques_incendie": "MOYEN/FORT (Surchauffe localisée faisceau)",
-        "implication_juridique": "Défaut de conception ou usure prématurée"
+        "causes_mecaniques": [],
+        "causes_electriques": ["Court-circuit faisceau porte", "Relais collé", "Corrosion connecteur", "Surcharge circuit accessoire"],
+        "risque_incendie": "MOYEN/FORT (Surchauffe localisée faisceau isolant)",
+        "implication_juridique": "Défaut de conception ou usure prématurée / Modification aftermarket non conforme"
       },
       {
         "code": "U0100",
-        "system": "Réseau CAN",
-        "definition": "Perte communication avec ECM",
-        "causes_probables": ["Calculateur HS", "Coupure ligne CAN H/L", "Problème masse moteur"],
-        "risques_incendie": "FAIBLE",
-        "implication_juridique": "Panane immobilisante, responsabilité constructeur si défaut logiciel"
+        "system": "Réseau CAN Bus",
+        "definition": "Perte communication avec ECM/PCM",
+        "causes_mecaniques": [],
+        "causes_electriques": ["Calculateur HS", "Coupure ligne CAN H/L", "Problème masse moteur", "Interférence électromagnétique"],
+        "risque_incendie": "FAIBLE",
+        "implication_juridique": "Panane immobilisante, responsabilité constructeur si défaut logiciel ou câblage"
+      },
+      {
+        "code": "P0A7F",
+        "system": "Haute Tension (VE)",
+        "definition": "Pack Batterie Hautes Température",
+        "causes_mecaniques": ["Dégradation cellules", "Coolant leak"],
+        "causes_electriques": ["Déséquilibre BMS", "Short interne cellule"],
+        "risque_incendie": "CRITIQUE (Thermal Runaway imminent)",
+        "implication_juridique": "Rappel constructeur obligatoire, danger public, responsabilité pleine du fabricant"
       }
     ],
     "pannes_types": [
       {
         "id": "TECH_001",
         "titre": "Surchauffe moteur + Fuite liquide refroidissement",
-        "symptomes": ["Température élevée", "Niveau LLR baisse", "Vapeur blanche échappement"],
-        "diagnostic_expert": "Joint culasse grillé probable. Vérifier compression cylindres adjacentes.",
+        "symptomes": ["Température élevée", "Niveau LLR baisse", "Vapeur blanche échappement", "Odeur sucrée"],
+        "diagnostic_expert": "Joint culasse grillé probable. Vérifier compression cylindres adjacentes et test CO2.",
         "lien_incendie": "Contact gaz chauds/huile sur collecteur = Risque départ feu compartiment moteur.",
-        "lien_droit": "Si véhicule récent (<2 ans), présomption vice caché fabrication."
+        "lien_droit": "Si véhicule récent (<2 ans), présomption vice caché fabrication. Preuve nécessaire : analyse huile (présence eau)."
       },
       {
         "id": "TECH_002",
-        "titre": "Court-circuit Alternateur/Batterie",
-        "symptomes": ["Odeur brûlée", "Étalage tableau de bord erratique", "Batterie gonflée"],
-        "diagnostic_expert": "Isolation fil positif alternateur dégradée par chaleur/vibration.",
-        "lien_incendie": "ARC ÉLECTRIQUE DIRECT. Point de fusion cuivre/aluminium. Urgence vitale.",
-        "lien_droit": "Responsabilité pleine du réparateur si montage non conforme ou pièce neuve défectueuse."
+        "titre": "Court-circuit Alternateur/Batterie 12V",
+        "symptomes": ["Odeur plastique brûlé", "Étalage tableau de bord erratique", "Batterie gonflée", "Fusible sauté"],
+        "diagnostic_expert": "Isolation fil positif alternateur dégradée par chaleur/vibration. Arc électrique au niveau du bornier.",
+        "lien_incendie": "ARC ÉLECTRIQUE DIRECT. Point de fusion cuivre/aluminium. Urgence vitale. Propagation rapide vers capot.",
+        "lien_droit": "Responsabilité pleine du réparateur si montage non conforme ou pièce neuve défectueuse. Expertise ASTM E2929 requise sur fils."
       }
     ]
   },
@@ -65,6 +78,13 @@
         "description": "Carbonisation plus profonde d'un côté vs l'autre.",
         "interpretation": "Côté le plus carbonisé = Zone exposée le plus longtemps/intensément.",
         "sources_communes": ["Fluide hydraulique projeté", "Essence répandue"]
+      },
+      {
+        "id": "INC_PAT_03",
+        "nom": "Beading (Perlage)",
+        "description": "Formation de petites billes métalliques fondues sur conducteurs.",
+        "interpretation": "Preuve formelle d'arc électrique pré-mortem (avant extinction alimentations).",
+        "sources_communes": ["Court-circuit direct", "Arc sur prise oxydée"]
       }
     ],
     "causes_racines": [
@@ -73,30 +93,30 @@
         "categorie": "Électrique",
         "sous_categorie": "Arc / Court-Circuit",
         "mecanisme": "Décharge électrique traversant l'air ou contact direct +/- créant plasma (>3000°C).",
-        "preuves_astm_e2929": "Perles de fusion globuleuses (pré-mortem) vs striées (post-mortem).",
-        "facteurs_aggravants": ["Humidité", "Sel", "Usure isolation", "Modifications aftermarket (alarme, GPS)"]
+        "preuves_astm_e2929": "Perles de fusion globuleuses (pré-mortem) vs striées (post-mortem). Microscopie obligatoire.",
+        "facteurs_aggravants": ["Humidité", "Sel", "Usure isolation", "Modifications aftermarket (alarme, GPS, audio)"]
       },
       {
         "id": "INC_CAUSE_MEC",
         "categorie": "Mécanique",
         "sous_categorie": "Fuite Fluide + Contact Chaud",
-        "mecanisme": "Injection diesel essence huile frein touchant collecteur échappement ou turbo.",
+        "mecanisme": "Injection diesel essence huile frein touchant collecteur échappement ou turbo (>400°C).",
         "preuves_nfpa_921": "Traces de résidu calciné sur pièces chaudes, absence de court-circuit électrique.",
-        "facteurs_aggravants": ["Joints vieillis", "Colliers desserrés", "Turbos fuyards"]
+        "facteurs_aggravants": ["Joints vieillis", "Colliers desserrés", "Turbos fuyards", "Absence bouclier thermique"]
       },
       {
         "id": "INC_CAUSE_BATT",
         "categorie": "Énergétique",
         "sous_categorie": "Thermal Runaway Li-Ion",
-        "mecanisme": "Dégagement gazeux exothermique irréversible cellule batterie HT.",
-        "preuves_specifiques": ["Gonflement cellules", "Odeur électrolyte (pomme douce/acide)", "Arc DC intense"],
-        "facteurs_aggravants": ["Impact choc", "Surcharge BMS", "Défaut fabrication cellule"]
+        "mecanisme": "Dégagement gazeux exothermique irréversible cellule batterie HT. Réaction en chaîne.",
+        "preuves_specifiques": ["Gonflement cellules", "Odeur électrolyte (pomme douce/acide)", "Arc DC intense", "Projection flammes"],
+        "facteurs_aggravants": ["Impact choc", "Surcharge BMS", "Défaut fabrication cellule", "Décharge profonde prolongée"]
       }
     ],
     "polymeres": [
-      { "nom": "Polypropylène (PP)", "usage": "Pare-chocs, réservoirs", "comportement_feu": "Fond rapidement, gouttelettes inflammables", "toxicite": "CO élevé" },
-      { "nom": "ABS", "usage": "Tableau de bord, garnitures", "comportement_feu": "Noircit, dégage fumée épaisse noire", "toxicite": "HCN (Acide cyanhydrique)" },
-      { "nom": "Polyuréthane (PU)", "usage": "Mousses sièges, isolants", "comportement_feu": "Combustion très rapide, forte production CO/HCN", "toxicite": "TRÈS HAUTE" }
+      { "nom": "Polypropylène (PP)", "usage": "Pare-chocs, réservoirs, gaines", "comportement_feu": "Fond rapidement, gouttelettes inflammables, flamme bleue/orange", "toxicite": "CO élevé" },
+      { "nom": "ABS", "usage": "Tableau de bord, coques électroniques", "comportement_feu": "Noircit, dégage fumée épaisse noire, gouttes incandescentes", "toxicite": "HCN (Acide cyanhydrique)" },
+      { "nom": "Polyuréthane (PU)", "usage": "Mousses sièges, isolants acoustiques", "comportement_feu": "Combustion très rapide, forte production CO/HCN", "toxicite": "TRÈS HAUTE" }
     ]
   },
   "juridique": {
@@ -110,20 +130,20 @@
           "Il n'était pas apparent lors de l'achat (invisible pour acheteur avisé)"
         ],
         "effets": "Résolution de la vente (rendu argent) OU Réduction du prix.",
-        "preuve_requise": "Expertise judiciaire démontrant antériorité et gravité."
+        "preuve_requise": "Expertise judiciaire démontrant antériorité et gravité. Charge de la preuve sur l'acheteur."
       },
       {
         "id": "JUR_CONFORMITE",
         "titre": "Conformité Contractuelle (Code Consommation)",
         "conditions": "Bien non conforme à la description, à l'échantillon, ou inapte à l'usage attendu.",
         "effets": "Réparation, Remplacement, Résiliation.",
-        "nuance": "Plus souple que le vice caché, couvre aussi les défauts de conformité initiaux."
+        "nuance": "Plus souple que le vice caché, couvre aussi les défauts de conformité initiaux. Présomption de conformité pendant 2 ans (véhicules neufs)."
       },
       {
         "id": "JUR_RESP_CIVILE",
         "titre": "Responsabilité Civile Délictuelle (Art. 1240 Code Civil)",
         "triptyque": ["Fait générateur (faute/négligence)", "Préjudice (dommage matériel/corporel)", "Lien de causalité"],
-        "application_auto": "Souvent utilisée contre garagistes (mauvaise réparation) ou constructeurs (défaut conception)."
+        "application_auto": "Souvent utilisée contre garagistes (mauvaise réparation) ou constructeurs (défaut conception/manque info)."
       }
     ],
     "jurisprudences_marquantes": [
@@ -135,7 +155,7 @@
       {
         "reference": "CA Paris, Pôle 5, Chambre 10, 15 janv. 2020",
         "theme": "Incendie véhicule neuf",
-        "resume": "En cas d'incendie peu après achat, la responsabilité du constructeur est engagée sauf s'il prouve une cause externe (accident, modification)."
+        "resume": "En cas d'incendie peu après achat, la responsabilité du constructeur est engagée sauf s'il prouve une cause externe (accident, modification, vandalisme)."
       }
     ]
   },
