@@ -1,4 +1,4 @@
-name: Deploy Kevin Expert Suite Web
+name: Deploy Kevin Expert Suite Web V4
 
 on:
   push:
@@ -30,6 +30,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Verify Syntax (Auto-check)
+        run: |
+          node --check src/main.js
+          node -e "require('./public/data/knowledge.json')"
 
       - name: Build web app for GitHub Pages
         run: npm run build:pages
