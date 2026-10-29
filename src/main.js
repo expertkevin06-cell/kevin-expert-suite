@@ -19,10 +19,12 @@ const state = {
   users: [],     
   online: true,
   loginMode: "admin",
+  adminPwd: "",
+  tierName: "",
   error: "",
   notice: "",
   kb: {},        
-  activeTab: "analysis",
+  activeTab: "dashboard",
   searchQuery: "",
   searchResults: [],
   analysisInput: "",
@@ -54,7 +56,7 @@ async function getPref(key, fallback) {
     if (!value) return fallback;
     return JSON.parse(value);
   } catch (e) {
-    console.error(`Erreur pref ${key}:`, e);
+    console.error(`Erreur lecture pref ${key}:`, e);
     return fallback;
   }
 }
@@ -63,7 +65,7 @@ async function setPref(key, value) {
   try {
     await Preferences.set({ key, value: JSON.stringify(value) });
   } catch (e) {
-    console.error(`Erreur ecriture pref ${key}:`, e);
+    console.error(`Erreur écriture pref ${key}:`, e);
   }
 }
 
@@ -71,7 +73,7 @@ async function notify(title, body) {
   if (!Capacitor.isNativePlatform()) return;
   try {
     await LocalNotifications.schedule({ notifications: [{ id: Math.floor(Math.random()*100000), title, body }] });
-  } catch (e) { console.warn("Notif fail:", e); }
+  } catch (e) { console.warn("Notification failed:", e); }
 }
 
 async function ensureAdminInit() {
@@ -105,7 +107,7 @@ async function loginTier(name) {
     await setPref("tier_users", users);
     await notify("Demande d'accès", `${clean} demande l'accès.`);
   } else if (user.status === "revoked") {
-    throw new Error("Accès révoqué.");
+    throw new Error("Accès révoqué. Contactez l'administrateur.");
   }
 
   state.session = { role: "tier", name: user.name, userId: user.id };
@@ -139,7 +141,7 @@ async function loadKnowledge() {
     const json = await res.json();
     
     if (!json.technique || !json.incendie || !json.juridique) {
-      console.warn("Structure KB incomplete");
+      console.warn("Structure KB incomplète");
       state.kb = { technique: { dtc_codes: [], pannes_types: [] }, incendie: { patterns: [], causes_racines: [] }, juridique: { principes: [] } };
     } else {
       state.kb = json;
