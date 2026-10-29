@@ -1,4 +1,4 @@
-name: Build Kevin Expert Suite APK
+name: Build Kevin Expert Suite APK V4
 
 on:
   workflow_dispatch:
@@ -28,6 +28,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Verify Syntax (Auto-check)
+        run: |
+          echo "Checking JavaScript syntax..."
+          node --check src/main.js
+          echo "JS Syntax OK."
+          
+          echo "Checking JSON validity..."
+          node -e "require('./public/data/knowledge.json')"
+          echo "JSON Valid."
+
       - name: Build web app
         run: npm run build
 
@@ -48,7 +58,9 @@ jobs:
           permissions = [
               "INTERNET",
               "ACCESS_NETWORK_STATE",
-              "POST_NOTIFICATIONS"
+              "POST_NOTIFICATIONS",
+              "READ_MEDIA_IMAGES",
+              "CAMERA"
           ]
 
           for permission in permissions:
@@ -68,7 +80,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kevin-expert-suite-v3-apk
+          name: kevin-expert-suite-v4-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
@@ -76,9 +88,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="apk-v3-run-${GITHUB_RUN_ID}"
+          TAG="apk-v4-run-${GITHUB_RUN_ID}"
           gh release create "$TAG" \
             android/app/build/outputs/apk/debug/app-debug.apk \
-            --title "Kevin Expert Suite APK V3 Fusion - run ${GITHUB_RUN_NUMBER}" \
-            --notes "APK debug générée automatiquement. Installez le fichier app-debug.apk sur Android." \
+            --title "Kevin Expert Suite APK V4 Strict - run ${GITHUB_RUN_NUMBER}" \
+            --notes "APK debug générée automatiquement avec vérification syntaxique. Installez le fichier app-debug.apk sur Android." \
             --latest
