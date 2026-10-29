@@ -1,4 +1,4 @@
-name: Build Kevin Expert Suite APK V4 (Fixed)
+name: Build Kevin Expert Suite APK V4 (Final Fix)
 
 on:
   workflow_dispatch:
@@ -12,22 +12,22 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Toujours v4 pour checkout, mais compatible Node 22+
+        uses: actions/checkout@v4
 
       - name: Setup Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # Passage de 20 à 22 pour éviter la dépréciation immédiate
-          cache: 'npm'
+          node-version: '22' # Mise à jour obligatoire pour éviter dépréciation
+          # PAS DE CACHE ICI POUR ÉVITER L'ERREUR "lock file not found"
 
       - name: Setup Java 17 (Temurin)
-        uses: actions/setup-java@v5 # Migration obligatoire vers v5
+        uses: actions/setup-java@v5 # Migration vers v5 comme demandé par GitHub
         with:
           distribution: 'temurin'
           java-version: '17'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --no-audit --no-fund
 
       - name: Verify Syntax & JSON Integrity
         run: |
@@ -96,7 +96,6 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          # Force l'utilisation d'un wrapper récent si nécessaire
           ./gradlew wrapper --gradle-version=8.6 
 
       - name: Build Debug APK
@@ -107,7 +106,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kevin-expert-suite-v4-fixed
+          name: kevin-expert-suite-v4-final
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
@@ -115,9 +114,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="apk-v4-fixed-${GITHUB_RUN_ID}"
+          TAG="apk-v4-final-${GITHUB_RUN_ID}"
           gh release create "$TAG" \
             android/app/build/outputs/apk/debug/app-debug.apk \
-            --title "Kevin Expert Suite APK V4 Fixed - Run ${GITHUB_RUN_NUMBER}" \
-            --notes "Correction des erreurs CI/CD (Node 22 / Java 17). Installation directe." \
+            --title "Kevin Expert Suite APK V4 Final - Run ${GITHUB_RUN_NUMBER}" \
+            --notes "Fix CI/CD: No Cache Lock Issue, Node 22, Java 17 v5." \
             --latest
