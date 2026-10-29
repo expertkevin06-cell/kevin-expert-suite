@@ -1,4 +1,4 @@
-name: Build Kevin Expert Suite APK V4
+name: Build Kevin Expert Suite APK V4 (Fixed)
 
 on:
   workflow_dispatch:
@@ -12,31 +12,30 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Toujours v4 pour checkout, mais compatible Node 22+
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22' # Passage de 20 à 22 pour éviter la dépréciation immédiate
+          cache: 'npm'
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v5 # Migration obligatoire vers v5
         with:
-          distribution: temurin
-          java-version: 17
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Verify Syntax (Auto-check)
+      - name: Verify Syntax & JSON Integrity
         run: |
           echo "Checking JavaScript syntax..."
-          node --check src/main.js
-          echo "JS Syntax OK."
+          node --check src/main.js || { echo "❌ JS Error"; exit 1; }
           
           echo "Checking JSON validity..."
-          node -e "require('./public/data/knowledge.json')"
-          echo "JSON Valid."
+          node -e "try { require('./public/data/knowledge.json'); console.log('✅ JSON OK'); } catch(e) { console.error('❌ JSON Error:', e.message); process.exit(1); }"
 
       - name: Build web app
         run: npm run build
@@ -47,50 +46,78 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Add Android permissions
+      - name: Inject Android Permissions & Config
         run: |
           python3 - <<'PY'
           import pathlib
+          import xml.etree.ElementTree as ET
 
-          manifest = pathlib.Path("android/app/src/main/AndroidManifest.xml")
-          content = manifest.read_text(encoding="utf-8")
+          manifest_path = pathlib.Path("android/app/src/main/AndroidManifest.xml")
+          
+          if not manifest_path.exists():
+              print("❌ AndroidManifest.xml introuvable après cap add")
+              exit(1)
 
-          permissions = [
+          tree = ET.parse(manifest_path)
+          root = tree.getroot()
+          
+          ns = {'android': 'http://schemas.android.com/apk/res/android'}
+          
+          permissions_needed = [
               "INTERNET",
               "ACCESS_NETWORK_STATE",
               "POST_NOTIFICATIONS",
-              "READ_MEDIA_IMAGES",
+              "READ_MEDIA_IMAGES", 
               "CAMERA"
           ]
 
-          for permission in permissions:
-              tag = f'<uses-permission android:name="android.permission.{permission}" />'
-              if tag not in content:
-                  content = content.replace("<application", tag + "\n    <application", 1)
+          existing_perms = set()
+          for perm in root.findall('.//uses-permission', ns):
+              name = perm.attrib.get('{http://schemas.android.com/apk/res/android}name')
+              if name:
+                  existing_perms.add(name.split('.')[-1])
 
-          manifest.write_text(content, encoding="utf-8")
+          added_count = 0
+          for perm_name in permissions_needed:
+              full_perm = f"android.permission.{perm_name}"
+              if perm_name not in existing_perms:
+                  new_elem = ET.SubElement(root, 'uses-permission')
+                  new_elem.set('{http://schemas.android.com/apk/res/android}name', full_perm)
+                  added_count += 1
+          
+          if added_count > 0:
+              tree.write(manifest_path, encoding='utf-8', xml_declaration=True)
+              print(f"✅ Ajout de {added_count} permissions manquantes.")
+          else:
+              print("ℹ️ Toutes les permissions sont déjà présentes.")
           PY
 
-      - name: Build debug APK
+      - name: Configure Gradle Wrapper
         run: |
           cd android
           chmod +x gradlew
+          # Force l'utilisation d'un wrapper récent si nécessaire
+          ./gradlew wrapper --gradle-version=8.6 
+
+      - name: Build Debug APK
+        run: |
+          cd android
           ./gradlew assembleDebug
 
-      - name: Upload APK artifact
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kevin-expert-suite-v4-apk
+          name: kevin-expert-suite-v4-fixed
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - name: Create GitHub Release with APK
+      - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="apk-v4-run-${GITHUB_RUN_ID}"
+          TAG="apk-v4-fixed-${GITHUB_RUN_ID}"
           gh release create "$TAG" \
             android/app/build/outputs/apk/debug/app-debug.apk \
-            --title "Kevin Expert Suite APK V4 Strict - run ${GITHUB_RUN_NUMBER}" \
-            --notes "APK debug générée automatiquement avec vérification syntaxique. Installez le fichier app-debug.apk sur Android." \
+            --title "Kevin Expert Suite APK V4 Fixed - Run ${GITHUB_RUN_NUMBER}" \
+            --notes "Correction des erreurs CI/CD (Node 22 / Java 17). Installation directe." \
             --latest
