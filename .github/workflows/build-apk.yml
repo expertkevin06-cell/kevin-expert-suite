@@ -1,4 +1,4 @@
-name: Build Kevin Expert Suite APK (Strict Fix)
+name: Build Kevin Expert Suite APK V4 (Final Fix)
 
 on:
   workflow_dispatch:
@@ -17,67 +17,45 @@ jobs:
       - name: Setup Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          # IMPORTANT : Pas de cache ici pour éviter l'erreur "lock file not found"
+          node-version: '22' # Mise à jour obligatoire pour éviter dépréciation
+          # PAS DE CACHE ICI POUR ÉVITER L'ERREUR "lock file not found"
 
       - name: Setup Java 17 (Temurin)
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v5 # Migration vers v5 comme demandé par GitHub
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Clean previous builds (Force Reset)
-        run: |
-          rm -rf node_modules
-          rm -rf dist
-          rm -rf android
-          echo "✅ Nettoyage effectué."
-
-      - name: Install dependencies & Generate Lockfile
-        run: |
-          npm install --legacy-peer-deps
-          # Génère explicitement le lockfile si absent pour stabiliser le build futur
-          if [ ! -f package-lock.json ]; then
-            npm install --package-lock-only
-          fi
-          echo "✅ Dépendances installées."
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
 
       - name: Verify Syntax & JSON Integrity
         run: |
-          echo "Checking JS..."
+          echo "Checking JavaScript syntax..."
           node --check src/main.js || { echo "❌ JS Error"; exit 1; }
           
-          echo "Checking JSON..."
+          echo "Checking JSON validity..."
           node -e "try { require('./public/data/knowledge.json'); console.log('✅ JSON OK'); } catch(e) { console.error('❌ JSON Error:', e.message); process.exit(1); }"
 
-      - name: Build Web App (Vite)
-        run: |
-          npm run build
-          ls -la dist/ || { echo "❌ Dist folder missing after build"; exit 1; }
-          echo "✅ Web build réussi."
+      - name: Build web app
+        run: npm run build
 
-      - name: Add Capacitor Android Platform
-        run: |
-          # Supprime tout reste potentiel pour éviter les conflits
-          rm -rf android
-          npx cap add android
-          echo "✅ Plateforme Android ajoutée."
+      - name: Add Capacitor Android platform
+        run: npx cap add android
 
       - name: Sync Capacitor
-        run: |
-          npx cap sync android
-          echo "✅ Sync réussi."
+        run: npx cap sync android
 
-      - name: Inject Permissions into Manifest
+      - name: Inject Android Permissions & Config
         run: |
-          python3 << 'EOF'
+          python3 - <<'PY'
           import pathlib
           import xml.etree.ElementTree as ET
 
           manifest_path = pathlib.Path("android/app/src/main/AndroidManifest.xml")
           
           if not manifest_path.exists():
-              print("❌ AndroidManifest.xml introuvable")
+              print("❌ AndroidManifest.xml introuvable après cap add")
               exit(1)
 
           tree = ET.parse(manifest_path)
@@ -109,23 +87,21 @@ jobs:
           
           if added_count > 0:
               tree.write(manifest_path, encoding='utf-8', xml_declaration=True)
-              print(f"✅ Ajout de {added_count} permissions.")
+              print(f"✅ Ajout de {added_count} permissions manquantes.")
           else:
-              print("ℹ️ Permissions déjà présentes.")
-          EOF
+              print("ℹ️ Toutes les permissions sont déjà présentes.")
+          PY
 
       - name: Configure Gradle Wrapper
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew wrapper --gradle-version=8.6
-          echo "✅ Gradle configuré."
+          ./gradlew wrapper --gradle-version=8.6 
 
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
-          echo "✅ APK compilée."
+          ./gradlew assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
@@ -138,9 +114,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="apk-v4-fixed-${GITHUB_RUN_ID}"
+          TAG="apk-v4-final-${GITHUB_RUN_ID}"
           gh release create "$TAG" \
             android/app/build/outputs/apk/debug/app-debug.apk \
-            --title "Kevin Expert Suite APK V4 Fixed - Run ${GITHUB_RUN_NUMBER}" \
-            --notes "Build strict avec génération lockfile et nettoyage forcé." \
+            --title "Kevin Expert Suite APK V4 Final - Run ${GITHUB_RUN_NUMBER}" \
+            --notes "Fix CI/CD: No Cache Lock Issue, Node 22, Java 17 v5." \
             --latest
