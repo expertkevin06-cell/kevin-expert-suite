@@ -39,6 +39,12 @@ body {
 .mb-2 { margin-bottom: 16px; }
 .p-2 { padding: 16px; }
 .w-full { width: 100%; }
+.small { font-size: 0.85rem; }
+.bg-secondary { background: var(--bg-secondary); }
+.text-muted { color: var(--text-muted); }
+.text-warning { color: var(--accent-orange); }
+.text-success { color: var(--accent-green); }
+.text-danger { color: var(--accent-red); }
 
 button {
   cursor: pointer;
